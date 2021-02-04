@@ -33,8 +33,11 @@ class RootView(views.APIView):
                 for key_file in request.FILES:
                     data = request.FILES[key_file].read().decode('utf-8')
                     # было бы лучше отправить все данные одним запросом к базе данных...
+                    deals_list = []
                     for deal in csv_data.to_db(data):
-                        history.deal_set.create(**deal)
+                        d = Deal(**deal, deal=history)
+                        deals_list.append(d)
+                    Deal.objects.bulk_create(deals_list)
                 cache.delete(self.page_cache)
                 return JsonResponse({'status': 'OK'})
 
